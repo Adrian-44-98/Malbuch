@@ -6,6 +6,8 @@ import { Card, CardContent } from './ui/card'
 import { toast } from 'sonner'
 import { X, Plus, GripVertical } from 'lucide-react'
 import Image from 'next/image'
+import { createOrderWithImages } from "@/lib/actions"
+import { useRouter } from "next/navigation"
 
 interface BookImage {
   id: string
@@ -170,6 +172,8 @@ export function BookBuilder() {
   const [isLoading, setIsLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isTransforming, setIsTransforming] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const router = useRouter()
 
   const transformImage = useCallback(async (imageId: string, base64Image: string) => {
     updateState({
@@ -304,6 +308,40 @@ export function BookBuilder() {
       }
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleContinueToCustomize = async () => {
+    if (!state.images || state.images.length === 0) {
+      toast.error("Please add some images first.")
+      return
+    }
+    if (!state.images.every(img => img.transformedUrl)) {
+      toast.warning("Please transform all images before continuing.")
+      return
+    }
+
+    setIsSaving(true)
+    toast.info("Creating your book project...")
+
+    try {
+      const mockUserId = "user_placeholder_id"
+      
+      const imageUrls = state.images.map(img => img.transformedUrl || img.originalUrl)
+
+      const result = await createOrderWithImages(mockUserId, imageUrls)
+
+      if (result.success && result.orderId) {
+        toast.success("Book project created! Redirecting to customization...")
+        router.push(`/customize/${result.orderId}`)
+      } else {
+        toast.error(result.error || "Failed to create book project.")
+      }
+    } catch (error) {
+      console.error("Error continuing to customization:", error)
+      toast.error("An unexpected error occurred.")
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -461,9 +499,17 @@ export function BookBuilder() {
           <Button 
             size="lg" 
             className="bg-purple-600 hover:bg-purple-700"
-            disabled={!state.images.some(img => img.transformedUrl)}
+            disabled={!state.images.every(img => img.transformedUrl) || isSaving}
+            onClick={handleContinueToCustomize}
           >
-            Continue to Customize
+            {isSaving ? (
+               <div className="flex items-center gap-2">
+                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                 Saving...
+               </div>
+            ) : (
+              'Continue to Customize'
+            )}
           </Button>
         </div>
       )}
