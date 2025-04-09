@@ -67,4 +67,19 @@ meinmalbuch/
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Environment Setup
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Update the following environment variables in `.env.local`:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `STRIPE_SECRET_KEY`: Your Stripe secret key
+   - `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook secret
+   - `STRIPE_PUBLISHABLE_KEY`: Your Stripe publishable key
+
+3. Never commit your `.env.local` file to version control. It's already included in `.gitignore`. 
