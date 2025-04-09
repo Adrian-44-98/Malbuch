@@ -14,14 +14,15 @@ datasource db {
 }
 
 model Order {
-  id        String   @id @default(cuid())
-  userId    String
-  images    String   // JSON string of image URLs
-  status    String   @default("pending")
-  customization Json // JSON object of customization options
+  id              String   @id @default(cuid())
+  userId          String
+  images          String   // JSON string of image URLs
+  status          String   @default("pending")
+  customization   Json     // JSON object of customization options
   stripePaymentId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
 }
 
 model User {

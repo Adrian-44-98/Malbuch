@@ -18,7 +18,7 @@ const MockCardElement = () => {
   );
 };
 
-const CheckoutForm = ({ orderId }: { orderId: string }) => {
+export const CheckoutForm = ({ orderId }: { orderId: string }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // const stripe = useStripe();
