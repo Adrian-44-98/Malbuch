@@ -170,24 +170,15 @@ export function BookBuilder() {
   const [isLoading, setIsLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isTransforming, setIsTransforming] = useState(false)
-  const [showCoverSelector, setShowCoverSelector] = useState(false)
-
-  const handleCoverSelect = useCallback((coverId: string) => {
-    updateState({ selectedCover: coverId })
-    setShowCoverSelector(false)
-  }, [updateState])
 
   const transformImage = useCallback(async (imageId: string, base64Image: string) => {
+    updateState({
+      images: state.images.map(img => 
+        img.id === imageId ? { ...img, isTransforming: true } : img
+      )
+    })
+  
     try {
-      updateState({
-        images: state.images.map(img => 
-          img.id === imageId 
-            ? { ...img, isTransforming: true }
-            : img
-        )
-      })
-
-      await new Promise(resolve => setTimeout(resolve, 1000))
       const transformedUrl = await createSketchEffect(base64Image)
       
       updateState({
@@ -197,20 +188,46 @@ export function BookBuilder() {
             : img
         )
       })
-
       toast.success('Image transformed successfully!')
     } catch (error) {
       console.error('Error transforming image:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to transform image')
       updateState({
         images: state.images.map(img => 
-          img.id === imageId 
-            ? { ...img, isTransforming: false }
-            : img
+          img.id === imageId ? { ...img, isTransforming: false } : img
         )
       })
     }
   }, [state.images, updateState, createSketchEffect])
+
+  const transformAllImages = useCallback(async () => {
+    if (isTransforming) return
+
+    const imagesToTransform = state.images.filter(img => !img.transformedUrl && !img.isTransforming)
+    if (imagesToTransform.length === 0) {
+      toast.info("All images are already transformed.")
+      return
+    }
+
+    setIsTransforming(true)
+    toast.info(`Starting transformation for ${imagesToTransform.length} image(s)...`)
+
+    try {
+      const transformationPromises = imagesToTransform.map(image => 
+        transformImage(image.id, image.originalUrl)
+      )
+      
+      await Promise.all(transformationPromises)
+
+      toast.success("All image transformations complete!")
+
+    } catch (error) {
+      console.error("Error during bulk transformation:", error)
+      toast.error("An error occurred during some image transformations.")
+    } finally {
+      setIsTransforming(false)
+    }
+  }, [state.images, transformImage, isTransforming])
 
   const processFile = useCallback(async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
@@ -246,16 +263,14 @@ export function BookBuilder() {
 
     setIsLoading(true)
     try {
-      // Process each file
       for (const file of Array.from(files)) {
         await processFile(file)
       }
     } finally {
       setIsLoading(false)
-      // Reset the file input
       event.target.value = ''
     }
-  }, [])
+  }, [processFile])
 
   const handleDelete = (id: string) => {
     updateState({ images: state.images.filter(img => img.id !== id) })
@@ -294,7 +309,8 @@ export function BookBuilder() {
 
   return (
     <div className="space-y-8">
-      {/* Cover Selection */}
+      {/* Cover Selection - Temporarily removed */}
+      {/* 
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Book Cover</h3>
@@ -314,6 +330,7 @@ export function BookBuilder() {
           selectedCover={state.selectedCover}
         />
       )}
+      */}
 
       {/* Image Grid */}
       <div 
