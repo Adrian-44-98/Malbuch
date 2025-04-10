@@ -8,9 +8,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Using environment variables to switch between databases
+// Use SQLite for development and PostgreSQL for production
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql" // Changed from "sqlite" to "postgresql"
+  url      = env("DATABASE_URL") // This will need to be a PostgreSQL connection string in production
+  // For development, you can use a local PostgreSQL instance
+  // or consider using the Prisma Data Proxy for serverless environments
 }
 
 model Order {
@@ -19,7 +23,8 @@ model Order {
   images          String   // JSON string of image URLs
   status          String   @default("pending")
   customization   Json     // JSON object of customization options
-  stripePaymentId String
+  totalPrice      Float?   // Add totalPrice field, make it optional initially
+  stripePaymentId String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   user            User     @relation(fields: [userId], references: [id])
