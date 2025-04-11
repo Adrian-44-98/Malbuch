@@ -11,8 +11,9 @@ generator client {
 // Using environment variables to switch between databases
 // Use SQLite for development and PostgreSQL for production
 datasource db {
-  provider = "postgresql" // Changed from "sqlite" to "postgresql"
-  url      = env("DATABASE_URL") // This will need to be a PostgreSQL connection string in production
+  provider  = "postgresql" // Changed from "sqlite" to "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // Changed from DATABASE_URL to use Vercel's Postgres integration
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Needed for migrations
   // For development, you can use a local PostgreSQL instance
   // or consider using the Prisma Data Proxy for serverless environments
 }
